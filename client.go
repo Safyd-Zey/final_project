@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"crypto/tls"
 )
 
 const (
@@ -65,7 +66,15 @@ func notifyTyping(conn net.Conn) {
 }
 
 func main() {
-	conn, err := net.Dial(CONN_TYPE, CONN_PORT)
+	cert, err := tls.LoadX509KeyPair("client.crt", "client.key")
+	if err != nil {
+		fmt.Println("Error loading client certificate:", err)
+		os.Exit(1)
+	}
+
+	config := tls.Config{Certificates: []tls.Certificate{cert}, InsecureSkipVerify: true}
+
+	conn, err := tls.Dial(CONN_TYPE, CONN_PORT, &config)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
